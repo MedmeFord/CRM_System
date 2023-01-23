@@ -1,25 +1,31 @@
 package org.example.controllers;
 
-import org.example.dao.PersonDAO;
 import org.example.model.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.example.dao.PersonDAO;
 
+
+/**
+ * @author Neil Alishev
+ */
 @Controller
 @RequestMapping("/people")
 public class PeopleController {
+
     private final PersonDAO personDAO;
 
+    @Autowired
     public PeopleController(PersonDAO personDAO) {
         this.personDAO = personDAO;
     }
 
     @GetMapping()
     public String index(Model model) {
-        //  получим всех людей из DAO и передадим на отображение в представление
         model.addAttribute("people", personDAO.index());
         return "people/index";
     }
@@ -31,25 +37,32 @@ public class PeopleController {
     }
 
     @GetMapping("/new")
-    public String newPerson(Model model) {
-        model.addAttribute("person", new Person());
+    public String newPerson(@ModelAttribute("person") Person person) {
         return "people/new";
     }
 
     @PostMapping()
-    public String create(@ModelAttribute("person") Person person) {
+    public String create(@ModelAttribute("person") @Validated Person person, BindingResult bindingResult) {
+        System.out.println(bindingResult.hasErrors());
+        if (bindingResult.hasErrors()) {
+            return "people/new";
+        }
         personDAO.save(person);
         return "redirect:/people";
     }
 
     @GetMapping("/{id}/edit")
-    public String edit(@PathVariable("id") int id, Model model) {
+    public String edit(Model model, @PathVariable("id") int id) {
         model.addAttribute("person", personDAO.show(id));
-        return "/people/edit";
+        return "people/edit";
     }
 
-    @PatchMapping("{id}")
-    public String update(@ModelAttribute("person") Person person, @PathVariable("id") int id) {
+    @PatchMapping("/{id}")
+    public String update(@ModelAttribute("person") @Validated Person person, BindingResult bindingResult,
+                         @PathVariable("id") int id) {
+        if (bindingResult.hasErrors()) {
+            return "/people/edit";
+        }
         personDAO.update(id, person);
         return "redirect:/people";
     }
