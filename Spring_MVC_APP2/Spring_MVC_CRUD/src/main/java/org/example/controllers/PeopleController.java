@@ -9,10 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.example.dao.PersonDAO;
 
-
-/**
- * @author Neil Alishev
- */
 @Controller
 @RequestMapping("/people")
 public class PeopleController {
@@ -42,11 +38,11 @@ public class PeopleController {
     }
 
     @PostMapping()
-    public String create(@ModelAttribute("person") @Validated Person person, BindingResult bindingResult) {
-        System.out.println(bindingResult.hasErrors());
-        if (bindingResult.hasErrors()) {
+    public String create(@ModelAttribute("person") @Validated Person person,
+                         BindingResult bindingResult) {
+        if (bindingResult.hasErrors())
             return "people/new";
-        }
+
         personDAO.save(person);
         return "redirect:/people";
     }
@@ -60,9 +56,9 @@ public class PeopleController {
     @PatchMapping("/{id}")
     public String update(@ModelAttribute("person") @Validated Person person, BindingResult bindingResult,
                          @PathVariable("id") int id) {
-        if (bindingResult.hasErrors()) {
-            return "/people/edit";
-        }
+        if (bindingResult.hasErrors())
+            return "people/edit";
+
         personDAO.update(id, person);
         return "redirect:/people";
     }
